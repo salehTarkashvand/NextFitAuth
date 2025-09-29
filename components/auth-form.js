@@ -5,7 +5,9 @@ import { useFormState } from 'react-dom';
 import signup from '@/actions/auth-action';
 
 export default function AuthForm() {
+
   const[state , formAction]=useFormState(signup,{})
+  
   return (
     <form id="auth-form" action={formAction}>
       <div>
