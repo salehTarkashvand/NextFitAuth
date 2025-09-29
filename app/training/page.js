@@ -1,6 +1,9 @@
 import { getTrainings } from '@/lib/training';
 
+
+
 export default async function TrainingPage() {
+  
   const trainingSessions = getTrainings();
 
   return (
