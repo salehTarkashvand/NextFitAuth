@@ -1,11 +1,11 @@
 "use server";
 
-import { createAuthSession } from "@/lib/auth";
-import { hashUserPassword } from "@/lib/hash";
-import { createUser } from "@/lib/user";
+import { createAuthSession, verifyAuth } from "@/lib/auth";
+import { hashUserPassword, verifyPassword } from "@/lib/hash";
+import { createUser, getUserByEmail } from "@/lib/user";
 import { redirect } from "next/navigation";
 
-export default async function signup(prevState, formData) {
+export async function signup(prevState, formData) {
   const email = formData.get("email");
   const password = formData.get("password");
   let errors = {};
@@ -25,7 +25,7 @@ export default async function signup(prevState, formData) {
 
   try {
     const id = createUser(email, hashedPassword);
-    createAuthSession(id);
+    await createAuthSession(id);
     redirect("/training");
   } catch (error) {
     if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
@@ -37,4 +37,31 @@ export default async function signup(prevState, formData) {
     }
     throw error;
   }
+}
+
+export async function login(prevState, formData) {
+  const email = formData.get("email");
+  const password = formData.get("password");
+
+  const exisitingUser = getUserByEmail(email);
+
+  if (!exisitingUser) {
+    return {
+      errors: {
+        email: "could not authenticate user , please check your credentials",
+      },
+    };
+  }
+
+  const isValidPassword = verifyPassword(exisitingUser.password, password);
+
+  if (!isValidPassword) {
+    return {
+      errors: {
+        password: "could not authenticate user , please check your credentials",
+      },
+    };
+  }
+  await createAuthSession(exisitingUser.id);
+  redirect("/training");
 }
