@@ -1,6 +1,6 @@
 "use server";
 
-import { createAuthSession, verifyAuth } from "@/lib/auth";
+import { createAuthSession} from "@/lib/auth";
 import { hashUserPassword, verifyPassword } from "@/lib/hash";
 import { createUser, getUserByEmail } from "@/lib/user";
 import { redirect } from "next/navigation";
@@ -44,6 +44,8 @@ export async function login(prevState, formData) {
   const password = formData.get("password");
 
   const exisitingUser = getUserByEmail(email);
+  console.log(exisitingUser);
+  
 
   if (!exisitingUser) {
     return {
@@ -59,9 +61,16 @@ export async function login(prevState, formData) {
     return {
       errors: {
         password: "could not authenticate user , please check your credentials",
-      },
+      }
     };
   }
   await createAuthSession(exisitingUser.id);
   redirect("/training");
+}
+
+export async function auth(mode, prevState, formData) {
+  if (mode === "login") {
+    return login(prevState, formData);
+  }
+  return signup(prevState, formData);
 }
